@@ -25,17 +25,26 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v4
 
-      - name: exit
-        run: exit 1
 
       # Runs a single command using the runners shell
       - name: Run a one-line script
         run: echo Hello, world!
         
-      - name: Send finish notification
+      - name: Send Webhook Notify
         if: always()
         run: |
-          curl -X POST -H 'Content-Type: application/json' \
-            -d '{"msg_type":"text","content":{"text":"构建完成: 状态 `${{ job.status }}`, 仓库 `${{ github.repository }}`, 分支 `${{ github.ref_name }}`"}}' \
-            ${{ secrets.WEBHOOK_URL }}
-
+          # GitHub 上下文变量
+          TITLE=$(echo "${{ github.event.head_commit.message }}" | head -n1)
+          if [ "${{ job.status }}" = "success" ]; then
+            PREFIX="🟢构建成功"
+          else
+            PREFIX="🔴构建失败"
+          fi
+          
+          # 拼接消息
+          MSG="$PREFIX [${{ github.repository }}@${{ github.ref_name }}]($TITLE) #${{ github.run_number }}"
+          
+          # 发送 webhook
+          curl -X POST -H "Content-Type: application/json" \
+            -d "{\"msg_type\":\"text\",\"content\":{\"text\":\"$MSG\"}}" \
+            "${{ secrets.WEBHOOK_URL }}"
