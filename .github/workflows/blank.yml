@@ -33,6 +33,6 @@ jobs:
         if: always()
         run: |
           curl -X POST -H 'Content-Type: application/json' \
-            -d '{"msg_type":"text","content":"构建完成: 状态 `${{ job.status }}`, 仓库 `${{ github.repository }}`, 分支 `${{ github.ref_name }}`"}' \
+            -d '{"msg_type":"text","content":{"text":"构建完成: 状态 `${{ job.status }}`, 仓库 `${{ github.repository }}`, 分支 `${{ github.ref_name }}`"}}' \
             ${{ secrets.WEBHOOK_URL }}
 
